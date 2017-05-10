@@ -1,0 +1,39 @@
+#login user 
+/login
+
+#logout user
+/logout
+
+#registrazione user
+/register
+
+#informazioni user
+/user/info
+
+#cambia informazioni user
+/user/info/update
+
+#carica un'immagine, possibile tag per definire il giorno del caricamento foto
+/image/insert
+
+#carica le prime immagini per voti
+/images/rank
+
+#carica le prime immagini per caricamento
+/images/new
+
+#carica le immagini del profilo
+/images/profile/all
+
+#immagini in caricamento (in validazione)
+/images/profile/uploading
+
+#vota immagine
+/image/{imageId}/vote
+
+#ritorna l'immagine
+/image/{imageId}
+
+Tutte le chiamate images tornano una lista di foto da vedere se tornarle solo gli id oppure tornarle con una risoluzione inferiore 
+
+
