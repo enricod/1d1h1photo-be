@@ -24,7 +24,7 @@ var routes = Routes{
 	Route{
 		"logout",
 		"GET",
-		"/logout",
-		rest.LoginReq,
+		"/logout/{username}",
+		rest.Logout,
 	},
 }

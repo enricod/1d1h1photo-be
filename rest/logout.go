@@ -1,10 +1,12 @@
 package rest
 
 import (
+<<<<<<< HEAD:rest/logout.go
 	"fmt"
+=======
+>>>>>>> c4cfc481525c81a69bd4c9082683268d887e88d0:src/it/1d1hphoto/rest/logout.go
 	"net/http"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"time"
 	"github.com/enricod/1h1dphoto.com-be/model"
@@ -12,13 +14,6 @@ import (
 
 func Logout(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	signedToken := vars["token"]
-	token, err := jwt.ParseWithClaims(signedToken, &model.Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected siging method")
-		}
-		return []byte("secret"), nil
-	})
-	token.Claims.Set(ExpiresAt:time.Now())
-	res.Header().Set("Content-Type", "application/json")
+	username := vars["username"]
+	Tokens[username] = nil
 }
