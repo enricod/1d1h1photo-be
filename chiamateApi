@@ -16,13 +16,13 @@
 #carica un'immagine, possibile tag per definire il giorno del caricamento foto
 /image/insert
 
-#carica le prime immagini per voti
+#carica le prime immagini per voti (valide)
 /images/rank
 
-#carica le prime immagini per caricamento
+#carica immagini per caricamento (valide)
 /images/new
 
-#carica le immagini del profilo
+#carica le immagini del profilo (valide)
 /images/profile/all
 
 #immagini in caricamento (in validazione)
