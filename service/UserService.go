@@ -2,9 +2,10 @@ package service
 
 import (
 	"errors"
-	"max/apitest/convert"
-	"max/apitest/db"
-	"max/apitest/model"
+
+	"1d1hphoto.com-be/convert"
+	"1d1hphoto.com-be/db"
+	"1d1hphoto.com-be/model"
 )
 
 func GetUser(user string) (model.User, error) {

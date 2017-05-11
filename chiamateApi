@@ -1,8 +1,11 @@
 #login user 
-/login
+/login (fatto)
 
 #logout user
-/logout
+/logout (fatto)
+
+#session per i test
+/sessions (fatto)
 
 #registrazione user
 /register
