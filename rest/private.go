@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"1d1hphoto.com-be/model"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
-	"github.com/enricod/1h1dphoto.com-be/model"
 )
 
 func Validate(protectedPage http.HandlerFunc) http.HandlerFunc {

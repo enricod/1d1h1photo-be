@@ -1,9 +1,10 @@
 package main
 
 import (
-	"./routes"
 	"log"
 	"net/http"
+
+	"1d1hphoto.com-be/routes"
 )
 
 func main() {

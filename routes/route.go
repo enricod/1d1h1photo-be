@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"../rest"
 	"net/http"
+
+	"1d1hphoto.com-be/rest"
 )
 
 type Route struct {

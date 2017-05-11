@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	 "github.com/dgrijalva/jwt-go"
+
+	"1d1hphoto.com-be/model"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
-	"github.com/enricod/1h1dphoto.com-be/model"
 )
 
 var Tokens = make(map[string]*jwt.Token)

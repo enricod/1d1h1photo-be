@@ -2,8 +2,9 @@ package convert
 
 import (
 	"database/sql"
-	"github.com/enricod/1h1dphoto.com-be/src/model"
-	"github.com/enricod/1h1dphoto.com-be/src/db"
+
+	"1d1hphoto.com-be/db"
+	"1d1hphoto.com-be/model"
 )
 
 func ParseUsers(rows *sql.Rows) []model.User {
