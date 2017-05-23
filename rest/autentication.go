@@ -69,7 +69,7 @@ func createToken(username string, host string) *jwt.Token {
 }
 
 func autentica(username string, password string) model.User {
-	user, err := service.GetUser(username)
+	user, err := service.GetUserByUsername(username)
 	if err != nil {
 		return model.User{}
 	}
