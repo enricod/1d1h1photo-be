@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -14,25 +13,24 @@ const (
 	DB_PASS = "root"
 )
 
-func Test() {
-	rows, err := openDB().Query("SELECT * FROM user")
+func ExecuteSelect(query string) *sql.Rows {
+	db := openDB()
+	rows, err := db.Query(query)
 	CheckErr(err)
-	for rows.Next() {
-		var id int
-		var nome string
-		var cognome string
-		err = rows.Scan(&id, &nome, &cognome)
-		CheckErr(err)
-		fmt.Println(id)
-		fmt.Println(nome)
-		fmt.Println(cognome)
-	}
+	db.Close()
+	return rows
 }
 
-func ExecuteSelect(query string) *sql.Rows {
-	rows, err := openDB().Query(query)
+func Insert(query string, s ...string) int64 {
+	db := openDB()
+	stmt, err := db.Prepare(query)
 	CheckErr(err)
-	return rows
+	res, err := stmt.Exec("w", "e")
+	CheckErr(err)
+	id, err := res.LastInsertId()
+	CheckErr(err)
+	db.Close()
+	return id
 }
 
 func openDB() *sql.DB {

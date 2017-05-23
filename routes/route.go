@@ -34,4 +34,10 @@ var routes = Routes{
 		"/sessions",
 		rest.Sessions,
 	},
+	Route{
+		"registrazione",
+		"GET",
+		"/registra/{username}",
+		rest.Registra,
+	},
 }

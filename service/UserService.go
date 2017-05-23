@@ -36,3 +36,7 @@ func ListUser() []model.User {
 	var rows = db.ExecuteSelect("select * from user")
 	return convert.ParseUsers(rows)
 }
+
+func InsertUser(user model.User) int64 {
+	return db.Insert("insert user set nome=?,cognome=?", "t", "n")
+}
