@@ -2,7 +2,18 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
+	"net/http"
+	"github.com/enricod/1h1dphoto.com-be/rest"
 )
+
+type Route struct {
+	Name        string
+	Method      string
+	Pattern     string
+	HandlerFunc http.HandlerFunc
+}
+
+type Routes []Route
 
 func NewRouter() *mux.Router {
 
@@ -17,3 +28,33 @@ func NewRouter() *mux.Router {
 
 	return router
 }
+
+
+
+var routes = Routes{
+	Route{
+		"userRegister",
+		"POST",
+		"/user/register",
+		rest.UserRegister,
+	},
+	Route{
+		"userCodeValidation",
+		"POST",
+		"/user/codeValidation",
+		rest.UserCodeValidation,
+	},
+	Route{
+		"logout",
+		"GET",
+		"/logout/{token}",
+		rest.Logout,
+	},
+	Route{
+		"sessionList",
+		"GET",
+		"/sessions",
+		rest.Sessions,
+	},
+}
+
