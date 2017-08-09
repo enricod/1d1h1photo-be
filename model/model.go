@@ -49,6 +49,15 @@ type UserRegisterRes struct {
 	Body UserRegisterResBody `json:"body"`
 }
 
+type EventsSummaryResBody struct {
+	NextEvent db.Event `json:"nextEvent"`
+	ClosedEvents []db.Event `json:"closedEvents"`
+}
+
+type EventsListRes struct {
+	Head ResHead `json:"head"`
+	Body EventsSummaryResBody `json:"body"`
+}
 
 func GenerateRandomBytes(n int) ([]byte, error) {
 	rand.Seed(time.Now().UnixNano())

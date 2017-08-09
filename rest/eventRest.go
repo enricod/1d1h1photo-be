@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"github.com/enricod/1h1dphoto.com-be/db"
 
+	"encoding/json"
+	"github.com/enricod/1h1dphoto.com-be/model"
 )
 
 func IsAuthenticated(f func(w http.ResponseWriter, req *http.Request)) func(w http.ResponseWriter, req *http.Request) {
@@ -20,8 +22,28 @@ func IsAuthenticated(f func(w http.ResponseWriter, req *http.Request)) func(w ht
 	}
 }
 
-func Events(res http.ResponseWriter, req *http.Request) {
+func EventsSummary(res http.ResponseWriter, req *http.Request) {
 
+	events := db.EventsList(4)
 
+	// separiamo eventi in 2 blocchi: quello futuro, e l'elenco di quelli passati
+	var closed = make( []db.Event, 0)
+	var next db.Event
+	for _, e := range events {
+		if e.IsClosed() {
+			closed = append(closed, e)
+		} else {
+			next = e
+		}
+	}
+
+	body := model.EventsSummaryResBody{ClosedEvents: closed, NextEvent:next}
+	eventsListRes := model.EventsListRes{Body:body}
+	res.WriteHeader(http.StatusOK)
+	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	err2 := json.NewEncoder(res).Encode(eventsListRes)
+	if err2 != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+	}
 
 }

@@ -13,6 +13,12 @@ type Event struct {
 	Name string
 }
 
+func ( e Event) IsClosed() bool {
+	return e.End.Before( time.Now() )
+}
+
+
+
 type EventSubmission struct {
 	gorm.Model
 	Event Event `gorm:"ForeignKey:EventId"`
@@ -38,5 +44,11 @@ type EventSubmissionAction struct {
 	Type string
 }
 
+func EventsList(limit uint) []Event {
+	db := openDB();
+	var events []Event
+	db.Limit(limit).Order("start DESC").Find(&events)
+	return events
+}
 
 
