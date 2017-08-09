@@ -15,8 +15,10 @@ type User struct {
 
 type UserAppToken struct {
 	gorm.Model
+	User User `gorm:"ForeignKey:UserId"`
 	UserId uint
 	AppToken string
+	ValidationCode string
 	Valid bool
 }
 
@@ -31,10 +33,39 @@ func UserFindByEmail(  email string)  (User, error) {
 	}
 }
 
+
+func ValidateUserAppToken( validationCode string, appToken string) bool  {
+	db := openDB();
+	var userAppToken UserAppToken
+	db.First(&userAppToken, "validation_code = ? AND app_token=?", validationCode, appToken)
+	if userAppToken.ID > 0 {
+		userAppToken.Valid = true
+		db.Save(&userAppToken)
+		return true
+	} else {
+		return false
+	}
+
+}
+
+func FindAppToken(appToken string)  *UserAppToken  {
+	db := openDB();
+	var userAppToken UserAppToken
+	db.First(&userAppToken, " app_token=?", appToken)
+	if userAppToken.ID > 0 {
+		return &userAppToken
+	} else {
+		return nil
+	}
+
+}
+
 func SalvaUser(user *User) {
 	db.Create(user)
 }
 
-func SalvaAppToken(userId uint, appToken string) {
-	db.Create(&UserAppToken{UserId: userId, AppToken: appToken})
+func SalvaAppToken(userId uint, appToken string, validationCode string) {
+	var user User
+	db.First(&user, userId)
+	db.Create(&UserAppToken{User: user, AppToken: appToken, ValidationCode: validationCode})
 }

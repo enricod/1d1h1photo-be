@@ -12,9 +12,35 @@ import (
 	"fmt"
 	"github.com/enricod/1h1dphoto.com-be/db"
 	"gopkg.in/gomail.v2"
+	"github.com/otium/queue"
 )
 
 var Tokens = make(map[string]db.User)
+
+type sender interface {
+	send()
+}
+
+type  EmailInfo struct {
+	To string
+	Code string
+}
+
+
+func ( ei EmailInfo) send() {
+	m := gomail.NewMessage()
+	m.SetHeader("From", "1h1dphoto@gmail.com")
+	m.SetHeader("To", ei.To)
+	m.SetHeader("Subject", "validation code")
+	m.SetBody("text/html", "Your validation code <b> " + ei.Code + "</b>")
+
+	d := gomail.NewDialer("smtp.gmail.com", 465, "1h1dphoto@gmail.com", "1h1dphotos")
+
+	// Send the email to Bob, Cora and Dan.
+	if err := d.DialAndSend(m); err != nil {
+		// panic(err)
+	}
+}
 
 /**
  * riceve in post il tipo UserRegisterReq. Se utente non esiste già sul database, lo creo.
@@ -35,17 +61,12 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 	}
 	//fmt.Println(userRegisterReq.Username)
 
-
-
 	// crea record per sessione
-	validationCode  := model.RandStringBytes(5)
-	userToken 		:= model.RandStringBytes(32)
+	validationCode, _  := model.GenerateRandomString(5)
+	userToken, _ 		:= model.GenerateRandomString(32)
 	head := model.ResHead{Success:true}
-	body := model.UserRegisterResBody{
-		UserToken: userToken }
+	body := model.UserRegisterResBody{ AppToken: userToken }
 	userRegisterRes := model.UserRegisterRes{Head:head, Body:body}
-
-
 
 	fmt.Println("validationCode: ",  validationCode );
 
@@ -54,27 +75,21 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 		user := db.User{Username:userRegisterReq.Username,Email: userRegisterReq.Email}
 		db.SalvaUser( &user )
 		// crea record in USER_APP_TOKEN
-		db.SalvaAppToken(user.ID, userToken)
+		db.SalvaAppToken(user.ID, userToken, validationCode)
 	} else {
 		// crea record in USER_APP_TOKEN
-		db.SalvaAppToken(user.ID, userToken)
+		db.SalvaAppToken(user.ID, userToken, validationCode)
 	}
 
+	handler := func(val interface{}) {
+		val.(sender).send()
+	}
+	q := queue.NewQueue(handler ,20)
+
+	q.Push( EmailInfo{To: userRegisterReq.Email, Code: validationCode})
 	// spedisci via email il codice di validazione
-	m := gomail.NewMessage()
-	m.SetHeader("From", "1h1dphoto@gmail.com")
-	m.SetHeader("To", userRegisterReq.Email)
-	m.SetHeader("Subject", "validation code")
-	m.SetBody("text/html", "Your validation code <b> " + validationCode + "</b>")
 
-
-	d := gomail.NewDialer("smtp.gmail.com", 465, "1h1dphoto@gmail.com", "1h1dphotos")
-
-	// Send the email to Bob, Cora and Dan.
-	if err := d.DialAndSend(m); err != nil {
-		panic(err)
-	}
-
+	q.Wait()
 
 	res.WriteHeader(http.StatusOK)
 	err2 := json.NewEncoder(res).Encode(userRegisterRes)
@@ -82,6 +97,7 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusInternalServerError)
 	}
 }
+
 
 func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 	var userCodeValidationReq model.UserCodeValidationReq
@@ -95,6 +111,13 @@ func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+
+	result := db.ValidateUserAppToken( userCodeValidationReq.ValidationCode, userCodeValidationReq.AppToken)
+	res.WriteHeader(http.StatusOK)
+	err2 := json.NewEncoder(res).Encode(model.ResHead{Success: result})
+	if err2 != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+	}
 	// aggiorna USER_APP_TOKEN con informazione che utente ha validato email
 	// CHECK_VALID => true
 }

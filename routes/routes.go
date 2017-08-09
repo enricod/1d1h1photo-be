@@ -45,6 +45,12 @@ var routes = Routes{
 		rest.UserCodeValidation,
 	},
 	Route{
+		"eventsList",
+		"GET",
+		"/events/list",
+		rest.IsAuthenticated(rest.Events),
+	},
+	Route{
 		"logout",
 		"GET",
 		"/logout/{token}",

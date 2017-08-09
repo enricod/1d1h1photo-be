@@ -4,6 +4,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/enricod/1h1dphoto.com-be/db"
 	"math/rand"
+	"time"
 )
 
 var MyKey = "1d1hphoto"
@@ -20,11 +21,8 @@ type Response struct {
 	Data   string
 }
 
-
-
-
 /**
- primo avvio del client
+ * primo avvio del client
  */
 type UserRegisterReq struct {
 	Username string
@@ -33,15 +31,16 @@ type UserRegisterReq struct {
 
 type UserCodeValidationReq struct {
 	ValidationCode string
-	UserToken string
+	AppToken string
 }
+
 
 type ResHead struct {
 	Success bool `json:"success"`
 }
 
 type UserRegisterResBody struct {
-	UserToken string `json:"userToken"`
+	AppToken string `json:"appToken"`
 	User db.User
 }
 
@@ -51,12 +50,30 @@ type UserRegisterRes struct {
 }
 
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-func RandStringBytes(n int) string {
+func GenerateRandomBytes(n int) ([]byte, error) {
+	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	_, err := rand.Read(b)
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		return nil, err
 	}
-	return string(b)
+
+	return b, nil
+}
+
+// GenerateRandomString returns a securely generated random string.
+// It will return an error if the system's secure random
+// number generator fails to function correctly, in which
+// case the caller should not continue.
+func GenerateRandomString(n int) (string, error) {
+	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
+	bytes, err := GenerateRandomBytes(n)
+	if err != nil {
+		return "", err
+	}
+	for i, b := range bytes {
+		bytes[i] = letters[b%byte(len(letters))]
+	}
+	return string(bytes), nil
 }

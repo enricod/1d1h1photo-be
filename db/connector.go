@@ -23,6 +23,7 @@ func openDB() *gorm.DB {
 		aDb, err := gorm.Open(driverName, DB_USER + ":" + DB_PASS +"@/" + DB_NAME +"?charset=utf8&parseTime=True&loc=Local")
 
 		db = aDb;
+		db.LogMode(true)
 		/*
 			db, err := sql.Open(driverName, DB_USER + ":" + DB_PASS + "@" + DB_HOST +
 					 "/" + DB_NAME + "?charset=utf8")
@@ -34,7 +35,7 @@ func openDB() *gorm.DB {
 		//defer db.Close()
 
 		// Migrate the schema
-		db.AutoMigrate(&User{}, &UserAppToken{})
+		db.AutoMigrate(&User{}, &UserAppToken{}, &Event{}, &EventSubmission{}, &EventSubmissionAction{})
 
 	}
 	return db
