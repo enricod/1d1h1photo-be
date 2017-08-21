@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	"time"
+	"fmt"
 )
 
 
@@ -11,6 +12,7 @@ type Event struct {
 	Start time.Time
 	End time.Time
 	Name string
+	Submissions []EventSubmission
 }
 
 func ( e Event) IsClosed() bool {
@@ -21,9 +23,9 @@ func ( e Event) IsClosed() bool {
 
 type EventSubmission struct {
 	gorm.Model
-	Event Event `gorm:"ForeignKey:EventId"`
+	Event Event `json:"-"`
 	EventId uint
-	User User `gorm:"ForeignKey:UserId"`
+	User User `json:"-"`
 	UserId uint
 	UploadTime time.Time
 	ImageName string
@@ -44,10 +46,25 @@ type EventSubmissionAction struct {
 	Type string
 }
 
+func FindEventSubmissions( event *Event) []EventSubmission {
+	db := openDB();
+	var eventSubmissions []EventSubmission
+	db.Model(&event).Related(&eventSubmissions)
+	return eventSubmissions
+}
+
 func EventsList(limit uint) []Event {
 	db := openDB();
 	var events []Event
 	db.Limit(limit).Order("start DESC").Find(&events)
+	for k, _ := range events {
+		submissions :=  FindEventSubmissions(&events[k])
+		fmt.Println("trovati %v submissions", len(submissions))
+		for _, s := range submissions {
+			 events[k].Submissions = append(events[k].Submissions, s)
+		}
+	}
+
 	return events
 }
 

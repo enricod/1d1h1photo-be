@@ -35,25 +35,25 @@ var routes = Routes{
 	Route{
 		"userRegister",
 		"POST",
-		"/user/register",
+		"/api/user/register",
 		rest.UserRegister,
 	},
 	Route{
 		"userCodeValidation",
 		"POST",
-		"/user/codeValidation",
+		"/api/user/codeValidation",
 		rest.UserCodeValidation,
 	},
 	Route{
 		"eventsSummaryList",
 		"GET",
-		"/events/summary/list",
+		"/api/events/summary/list",
 		rest.IsAuthenticated(rest.EventsSummary),
 	},
 	Route{
 		"logout",
 		"GET",
-		"/logout/{token}",
+		"/api/logout/{token}",
 		rest.Logout,
 	},
 	Route{

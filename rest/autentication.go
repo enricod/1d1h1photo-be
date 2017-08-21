@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"reflect"
 	"time"
-
 	"github.com/enricod/1h1dphoto.com-be/model"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
@@ -38,6 +37,7 @@ func ( ei EmailInfo) send() {
 
 	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
+		fmt.Println("Errore in invie email %v", err)
 		// panic(err)
 	}
 }
@@ -90,7 +90,7 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 	// spedisci via email il codice di validazione
 
 	q.Wait()
-
+	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	res.WriteHeader(http.StatusOK)
 	err2 := json.NewEncoder(res).Encode(userRegisterRes)
 	if err2 != nil {
@@ -113,6 +113,7 @@ func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 
 
 	result := db.ValidateUserAppToken( userCodeValidationReq.ValidationCode, userCodeValidationReq.AppToken)
+	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	res.WriteHeader(http.StatusOK)
 	err2 := json.NewEncoder(res).Encode(model.ResHead{Success: result})
 	if err2 != nil {
