@@ -14,7 +14,7 @@ import (
 	"github.com/otium/queue"
 )
 
-var Tokens = make(map[string]db.User)
+var Tokens = make(map[string]model.User)
 
 type sender interface {
 	send()
@@ -62,7 +62,7 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 	//fmt.Println(userRegisterReq.Username)
 
 	// crea record per sessione
-	validationCode, _  := model.GenerateRandomString(5)
+	validationCode, _   := model.GenerateRandomString(5)
 	userToken, _ 		:= model.GenerateRandomString(32)
 	head := model.ResHead{Success:true}
 	body := model.UserRegisterResBody{ AppToken: userToken }
@@ -72,7 +72,7 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 
 	// crea utente nel database se necessario
 	if user, err := db.UserFindByEmail(userRegisterReq.Email); err != nil {
-		user := db.User{Username:userRegisterReq.Username,Email: userRegisterReq.Email}
+		user := model.User{Username:userRegisterReq.Username,Email: userRegisterReq.Email}
 		db.SalvaUser( &user )
 		// crea record in USER_APP_TOKEN
 		db.SalvaAppToken(user.ID, userToken, validationCode)

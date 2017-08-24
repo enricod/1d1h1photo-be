@@ -5,7 +5,19 @@ import (
 	"github.com/enricod/1h1dphoto.com-be/db"
 	"encoding/json"
 	"github.com/enricod/1h1dphoto.com-be/model"
+	"github.com/gorilla/mux"
+	"strconv"
 )
+
+/**
+ * directory dove sono salvate le immagini processate
+ */
+var ImagesDir string
+
+/**
+ * directory dove sono salvate le immagini caricate dall'utente
+ */
+var ImagesUploadDir string
 
 func IsAuthenticated(f func(w http.ResponseWriter, req *http.Request)) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -21,13 +33,30 @@ func IsAuthenticated(f func(w http.ResponseWriter, req *http.Request)) func(w ht
 	}
 }
 
+func Event( res http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	eventId,_ := strconv.Atoi( vars["eventId"])
+	event, _  := db.EventDetails( uint(eventId))
+
+
+	response := model.EventResBody{Body: event}
+
+	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	res.WriteHeader(http.StatusOK)
+
+	err2 := json.NewEncoder(res).Encode(response)
+	if err2 != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func EventsSummary(res http.ResponseWriter, req *http.Request) {
 
 	events := db.EventsList(4)
 
 	// separiamo eventi in 2 blocchi: quello futuro, e l'elenco di quelli passati
-	var closed = make( []db.Event, 0)
-	var next db.Event
+	var closed = make( []model.Event, 0)
+	var next model.Event
 	for _, e := range events {
 		if e.IsClosed() {
 			closed = append(closed, e)
@@ -46,5 +75,5 @@ func EventsSummary(res http.ResponseWriter, req *http.Request) {
 	if err2 != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 	}
-
 }
+

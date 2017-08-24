@@ -2,9 +2,9 @@ package model
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"github.com/enricod/1h1dphoto.com-be/db"
 	"math/rand"
 	"time"
+	"github.com/jinzhu/gorm"
 )
 
 var MyKey = "1d1hphoto"
@@ -41,7 +41,7 @@ type ResHead struct {
 
 type UserRegisterResBody struct {
 	AppToken string `json:"appToken"`
-	User db.User
+	User User
 }
 
 type UserRegisterRes struct {
@@ -49,14 +49,75 @@ type UserRegisterRes struct {
 	Body UserRegisterResBody `json:"body"`
 }
 
+type Event struct {
+	gorm.Model
+	Start time.Time
+	End time.Time
+	Name string
+	Submissions []EventSubmission
+}
+
+type EventSubmission struct {
+	gorm.Model
+	Event Event `json:"-"`
+	EventId uint
+	User User `json:"-"`
+	UserId uint
+	ImageName string
+	ImageUid string
+	ThumbUrl string
+	ImageUrl string
+	LikesNr uint
+	Score float32
+	Latitude float32
+	Longitude float32
+	SubmissionDate time.Time
+}
+
+type User struct {
+	gorm.Model
+	Username string
+	Email string
+	EmailValid bool
+}
+
+type UserAppToken struct {
+	gorm.Model
+	User User `gorm:"ForeignKey:UserId"`
+	UserId uint
+	AppToken string
+	ValidationCode string
+	Valid bool
+}
+
+
+func ( e Event) IsClosed() bool {
+	return e.End.Before( time.Now() )
+}
+
 type EventsSummaryResBody struct {
-	NextEvent db.Event `json:"nextEvent"`
-	ClosedEvents []db.Event `json:"closedEvents"`
+	NextEvent Event `json:"nextEvent"`
+	ClosedEvents []Event `json:"closedEvents"`
+}
+
+type EventResBody struct {
+	Head ResHead `json:head`
+	Body Event `json:body`
 }
 
 type EventsListRes struct {
 	Head ResHead `json:"head"`
 	Body EventsSummaryResBody `json:"body"`
+}
+
+type EventSubmissionAction struct {
+	gorm.Model
+	User User `gorm:"ForeignKey:UserId"`
+	UserId uint
+	Time time.Time
+	EventSubmission EventSubmission `gorm:"ForeignKey:UserId"`
+	EventSubmissionId uint
+	Type string
 }
 
 func GenerateRandomBytes(n int) ([]byte, error) {

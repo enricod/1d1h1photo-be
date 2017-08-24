@@ -4,6 +4,7 @@ import (
 	//_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/jinzhu/gorm"
+	"github.com/enricod/1h1dphoto.com-be/model"
 )
 
 const (
@@ -35,7 +36,8 @@ func openDB() *gorm.DB {
 		//defer db.Close()
 
 		// Migrate the schema
-		db.AutoMigrate(&User{}, &UserAppToken{}, &Event{}, &EventSubmission{}, &EventSubmissionAction{})
+		db.AutoMigrate(&model.User{}, &model.UserAppToken{}, &model.Event{},
+			&model.EventSubmission{}, &model.EventSubmissionAction{})
 
 	}
 	return db

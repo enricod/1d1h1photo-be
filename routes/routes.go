@@ -51,16 +51,28 @@ var routes = Routes{
 		rest.IsAuthenticated(rest.EventsSummary),
 	},
 	Route{
+		"event",
+		"GET",
+		"/api/event/{eventId}",
+		rest.IsAuthenticated( rest.Event ),
+	},
+	Route{
 		"logout",
 		"GET",
 		"/api/logout/{token}",
 		rest.Logout,
 	},
 	Route{
-		"sessionList",
+		"imgUpload",
+		"POST",
+		"/api/img/upload",
+		rest.IsAuthenticated(rest.ImgUpload),
+	},
+	Route{
+		"imgDownload",
 		"GET",
-		"/sessions",
-		rest.Sessions,
+		"/api/img/download/{id}",
+		rest.ImgDownload,
 	},
 }
 

@@ -1,30 +1,14 @@
 package db
 
 import (
-	"github.com/jinzhu/gorm"
+	"github.com/enricod/1h1dphoto.com-be/model"
 	"errors"
 )
 
 
-type User struct {
-	gorm.Model
-	Username string
-	Email string
-	EmailValid bool
-}
-
-type UserAppToken struct {
-	gorm.Model
-	User User `gorm:"ForeignKey:UserId"`
-	UserId uint
-	AppToken string
-	ValidationCode string
-	Valid bool
-}
-
-func UserFindByEmail(  email string)  (User, error) {
+func UserFindByEmail(  email string)  (model.User, error) {
 	db := openDB();
-	var user User
+	var user model.User
 	db.First(&user, "email=?", email) // find product with code l1212
 	if (user.ID > 0) {
 		return user, nil
@@ -36,7 +20,7 @@ func UserFindByEmail(  email string)  (User, error) {
 
 func ValidateUserAppToken( validationCode string, appToken string) bool  {
 	db := openDB();
-	var userAppToken UserAppToken
+	var userAppToken model.UserAppToken
 	db.First(&userAppToken, "validation_code = ? AND app_token=?", validationCode, appToken)
 	if userAppToken.ID > 0 {
 		userAppToken.Valid = true
@@ -48,9 +32,9 @@ func ValidateUserAppToken( validationCode string, appToken string) bool  {
 
 }
 
-func FindAppToken(appToken string)  *UserAppToken  {
+func FindAppToken(appToken string)  *model.UserAppToken  {
 	db := openDB();
-	var userAppToken UserAppToken
+	var userAppToken model.UserAppToken
 	db.First(&userAppToken, " app_token=?", appToken)
 	if userAppToken.ID > 0 {
 		return &userAppToken
@@ -60,12 +44,12 @@ func FindAppToken(appToken string)  *UserAppToken  {
 
 }
 
-func SalvaUser(user *User) {
+func SalvaUser(user *model.User) {
 	db.Create(user)
 }
 
 func SalvaAppToken(userId uint, appToken string, validationCode string) {
-	var user User
+	var user model.User
 	db.First(&user, userId)
-	db.Create(&UserAppToken{User: user, AppToken: appToken, ValidationCode: validationCode})
+	db.Create(&model.UserAppToken{User: user, AppToken: appToken, ValidationCode: validationCode})
 }

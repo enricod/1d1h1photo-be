@@ -1,71 +1,79 @@
 package db
 
 import (
-	"github.com/jinzhu/gorm"
 	"time"
 	"fmt"
+	"errors"
+	"github.com/enricod/1h1dphoto.com-be/model"
 )
 
 
-type Event struct {
-	gorm.Model
-	Start time.Time
-	End time.Time
-	Name string
-	Submissions []EventSubmission
-}
-
-func ( e Event) IsClosed() bool {
-	return e.End.Before( time.Now() )
-}
-
-
-
-type EventSubmission struct {
-	gorm.Model
-	Event Event `json:"-"`
-	EventId uint
-	User User `json:"-"`
-	UserId uint
-	UploadTime time.Time
-	ImageName string
-	LikesNr uint
-	Score float32
-	Latitude float32
-	Longitude float32
-	SubmissionDate time.Time
-}
-
-type EventSubmissionAction struct {
-	gorm.Model
-	User User `gorm:"ForeignKey:UserId"`
-	UserId uint
-	Time time.Time
-	EventSubmission EventSubmission `gorm:"ForeignKey:UserId"`
-	EventSubmissionId uint
-	Type string
-}
-
-func FindEventSubmissions( event *Event) []EventSubmission {
+func FindEventSubmissions( event *model.Event, limit int) []model.EventSubmission {
 	db := openDB();
-	var eventSubmissions []EventSubmission
-	db.Model(&event).Related(&eventSubmissions)
+	var eventSubmissions []model.EventSubmission
+	db.Model(&event).Limit(limit).Order("score", true).Related(&eventSubmissions)
 	return eventSubmissions
 }
 
-func EventsList(limit uint) []Event {
+func EventsList(limit uint) []model.Event {
 	db := openDB();
-	var events []Event
-	db.Limit(limit).Order("start DESC").Find(&events)
+	var events []model.Event
+	db.Order("start DESC").Find(&events)
 	for k, _ := range events {
-		submissions :=  FindEventSubmissions(&events[k])
-		fmt.Println("trovati %v submissions", len(submissions))
+		submissions :=  FindEventSubmissions(&events[k], 3)
+		//fmt.Println("trovati submissions: ", len(submissions))
 		for _, s := range submissions {
-			 events[k].Submissions = append(events[k].Submissions, s)
+			s.ThumbUrl = "/api/img/download/" + fmt.Sprint( s.ID) + "?size=t"
+			events[k].Submissions = append(events[k].Submissions, s)
 		}
 	}
 
 	return events
 }
 
+func SubmissionById(id uint) (model.EventSubmission, error) {
+	db := openDB();
+	var submission model.EventSubmission
+	db.First(&submission, id) // find product with code l1212
+	if (submission.ID > 0) {
+		return submission, nil
+	} else {
+		return submission, errors.New("nessun utente con email ")
+	}
+}
+
+func EventDetails(eventId uint) (model.Event, error) {
+	db := openDB();
+	var event model.Event
+	db.First(&event,  eventId)
+	if (event.ID > 0) {
+			submissions :=  FindEventSubmissions(&event, 10000)
+			//fmt.Println("trovati %v submissions", len(submissions))
+			for _, s := range submissions {
+				s.ThumbUrl = "/api/img/download/" + fmt.Sprint( s.ID) + "?size=t"
+				s.ImageUrl = "/api/img/download/" + fmt.Sprint( s.ID) + "?size=s"
+				event.Submissions = append(event.Submissions, s)
+			}
+		return event, nil
+	} else {
+		return event, errors.New("nessun utente con email ")
+	}
+}
+
+
+func InsertSubmission(eventId uint, token *model.UserAppToken, imageUid string, imageName string) bool{
+	db := openDB();
+
+	eventSubmission := model.EventSubmission{
+		EventId: eventId,
+		UserId:token.UserId,
+		ImageName: imageName,
+		ImageUid: imageUid,
+		SubmissionDate: time.Now()}
+
+	db.Create(&eventSubmission)
+
+	return true
+
+}
 
