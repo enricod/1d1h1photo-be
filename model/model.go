@@ -16,21 +16,21 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+// AppConfs configurazioni dell'app
 type AppConfs struct {
 	Port         int
 	ImgDir       string
 	ImgUploadDir string
 }
 
+// Response probabilmente obsoleto
 type Response struct {
 	Status bool
 	Msg    string
 	Data   string
 }
 
-/**
- * primo avvio del client
- */
+// UserRegisterReq request primo avvio dell'applicazione mobile
 type UserRegisterReq struct {
 	Username string
 	Email    string

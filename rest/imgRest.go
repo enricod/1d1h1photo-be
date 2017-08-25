@@ -98,12 +98,10 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 
 	appToken := req.Header.Get("Authorization")
 
-	// FIXME
-	eventId := uint(1)
+	// FIXME cercare un evento in corso, se esiste
 
+	eventID := uint(1)
 	userAppToken := db.FindAppToken(appToken)
-
-	log.Println(appToken)
 	file, header, err := req.FormFile("image")
 
 	if err != nil {
@@ -119,7 +117,7 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 	out, err := os.Create(tempfile)
 	log.Println("tempfile ", tempfile)
 
-	db.InsertSubmission(eventId, userAppToken, imageUID, header.Filename)
+	db.InsertSubmission(eventID, userAppToken, imageUID, header.Filename)
 	if err != nil {
 		log.Println("[-] Unable to create the file for writing. Check your write access privilege.", err)
 		fmt.Fprintf(res, "[-] Unable to create the file for writing. Check your write access privilege.", err)
@@ -148,7 +146,6 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 	// SCRIVI RESPONSE
 	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	res.WriteHeader(http.StatusOK)
-
 	respHead := model.ResHead{Success: true}
 	err2 := json.NewEncoder(res).Encode(respHead)
 	if err2 != nil {

@@ -1,7 +1,15 @@
-# 1d1hphoto.com-be
+## 1d1hphoto.com-be
 
-avviare sqllite
 
-COMANDO
+
+## Configurazione
+
+
+{
+  "ImgDir":"/tmp/images",
+  "ImgUploadDir":"/tmp/imagesTemp",
+  "Port":9090
+}
+
 
 
