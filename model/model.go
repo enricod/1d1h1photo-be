@@ -1,9 +1,10 @@
 package model
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"math/rand"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 )
 
@@ -13,6 +14,12 @@ type Claims struct {
 	Username string
 	Time     int64
 	jwt.StandardClaims
+}
+
+type AppConfs struct {
+	Port         int
+	ImgDir       string
+	ImgUploadDir string
 }
 
 type Response struct {
@@ -26,14 +33,13 @@ type Response struct {
  */
 type UserRegisterReq struct {
 	Username string
-	Email string
+	Email    string
 }
 
 type UserCodeValidationReq struct {
 	ValidationCode string
-	AppToken string
+	AppToken       string
 }
-
 
 type ResHead struct {
 	Success bool `json:"success"`
@@ -41,83 +47,85 @@ type ResHead struct {
 
 type UserRegisterResBody struct {
 	AppToken string `json:"appToken"`
-	User User
+	User     User
 }
 
 type UserRegisterRes struct {
-	Head ResHead `json:"head"`
+	Head ResHead             `json:"head"`
 	Body UserRegisterResBody `json:"body"`
 }
 
+// Event oggetto dal database per descrizione evento
 type Event struct {
 	gorm.Model
-	Start time.Time
-	End time.Time
-	Name string
+	Start       time.Time
+	End         time.Time
+	Name        string
 	Submissions []EventSubmission
 }
 
+// EventSubmission oggetto dal DB per descrizione immagine associata a evento
 type EventSubmission struct {
 	gorm.Model
-	Event Event `json:"-"`
-	EventId uint
-	User User `json:"-"`
-	UserId uint
-	ImageName string
-	ImageUid string
-	ThumbUrl string
-	ImageUrl string
-	LikesNr uint
-	Score float32
-	Latitude float32
-	Longitude float32
+	Event          Event `json:"-"`
+	EventId        uint
+	User           User `json:"-"`
+	UserId         uint
+	ImageName      string
+	ImageUid       string
+	ThumbUrl       string
+	ImageUrl       string
+	LikesNr        uint
+	Score          float32
+	Latitude       float32
+	Longitude      float32
 	SubmissionDate time.Time
 }
 
+// User utente da database
 type User struct {
 	gorm.Model
-	Username string
-	Email string
+	Username   string
+	Email      string
 	EmailValid bool
 }
 
 type UserAppToken struct {
 	gorm.Model
-	User User `gorm:"ForeignKey:UserId"`
-	UserId uint
-	AppToken string
+	User           User `gorm:"ForeignKey:UserId"`
+	UserId         uint
+	AppToken       string
 	ValidationCode string
-	Valid bool
+	Valid          bool
 }
 
-
-func ( e Event) IsClosed() bool {
-	return e.End.Before( time.Now() )
+func (e Event) IsClosed() bool {
+	return e.End.Before(time.Now())
 }
 
 type EventsSummaryResBody struct {
-	NextEvent Event `json:"nextEvent"`
+	NextEvent    Event   `json:"nextEvent"`
 	ClosedEvents []Event `json:"closedEvents"`
 }
 
 type EventResBody struct {
-	Head ResHead `json:head`
-	Body Event `json:body`
+	Head ResHead `json:"head"`
+	Body Event   `json:"body"`
 }
 
 type EventsListRes struct {
-	Head ResHead `json:"head"`
+	Head ResHead              `json:"head"`
 	Body EventsSummaryResBody `json:"body"`
 }
 
 type EventSubmissionAction struct {
 	gorm.Model
-	User User `gorm:"ForeignKey:UserId"`
-	UserId uint
-	Time time.Time
-	EventSubmission EventSubmission `gorm:"ForeignKey:UserId"`
+	User              User `gorm:"ForeignKey:UserId"`
+	UserId            uint
+	Time              time.Time
+	EventSubmission   EventSubmission `gorm:"ForeignKey:UserId"`
 	EventSubmissionId uint
-	Type string
+	Type              string
 }
 
 func GenerateRandomBytes(n int) ([]byte, error) {

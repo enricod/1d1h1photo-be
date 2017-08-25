@@ -2,9 +2,9 @@ package db
 
 import (
 	//_ "github.com/go-sql-driver/mysql"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/jinzhu/gorm"
 	"github.com/enricod/1h1dphoto.com-be/model"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 const (
@@ -16,14 +16,13 @@ const (
 
 var db *gorm.DB
 
-
 func openDB() *gorm.DB {
 
-	if (db == nil) {
+	if db == nil {
 		driverName := "mysql"
-		aDb, err := gorm.Open(driverName, DB_USER + ":" + DB_PASS +"@/" + DB_NAME +"?charset=utf8&parseTime=True&loc=Local")
+		aDb, err := gorm.Open(driverName, DB_USER+":"+DB_PASS+"@/"+DB_NAME+"?charset=utf8&parseTime=True&loc=Local")
 
-		db = aDb;
+		db = aDb
 		db.LogMode(true)
 		/*
 			db, err := sql.Open(driverName, DB_USER + ":" + DB_PASS + "@" + DB_HOST +
@@ -31,7 +30,6 @@ func openDB() *gorm.DB {
 		*/
 
 		CheckErr(err)
-
 
 		//defer db.Close()
 

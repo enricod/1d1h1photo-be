@@ -2,16 +2,17 @@ package rest
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 	"time"
-	"github.com/enricod/1h1dphoto.com-be/model"
+
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
-	"fmt"
 	"github.com/enricod/1h1dphoto.com-be/db"
-	"gopkg.in/gomail.v2"
+	"github.com/enricod/1h1dphoto.com-be/model"
+	"github.com/gorilla/mux"
 	"github.com/otium/queue"
+	"gopkg.in/gomail.v2"
 )
 
 var Tokens = make(map[string]model.User)
@@ -20,18 +21,17 @@ type sender interface {
 	send()
 }
 
-type  EmailInfo struct {
-	To string
+type EmailInfo struct {
+	To   string
 	Code string
 }
 
-
-func ( ei EmailInfo) send() {
+func (ei EmailInfo) send() {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "1h1dphoto@gmail.com")
 	m.SetHeader("To", ei.To)
 	m.SetHeader("Subject", "validation code")
-	m.SetBody("text/html", "Your validation code <b> " + ei.Code + "</b>")
+	m.SetBody("text/html", "Your validation code <b> "+ei.Code+"</b>")
 
 	d := gomail.NewDialer("smtp.gmail.com", 465, "1h1dphoto@gmail.com", "1h1dphotos")
 
@@ -43,7 +43,7 @@ func ( ei EmailInfo) send() {
 }
 
 /**
- * riceve in post il tipo UserRegisterReq. Se utente non esiste già sul database, lo creo.
+ * UserRegister riceve in post il tipo UserRegisterReq. Se utente non esiste già sul database, lo creo.
  * genero codice alfanumerico che poi sarà spedito via email.
  * Restituisce un tipo UserRegisterRes
  */
@@ -62,18 +62,18 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 	//fmt.Println(userRegisterReq.Username)
 
 	// crea record per sessione
-	validationCode, _   := model.GenerateRandomString(5)
-	userToken, _ 		:= model.GenerateRandomString(32)
-	head := model.ResHead{Success:true}
-	body := model.UserRegisterResBody{ AppToken: userToken }
-	userRegisterRes := model.UserRegisterRes{Head:head, Body:body}
+	validationCode, _ := model.GenerateRandomString(5)
+	userToken, _ := model.GenerateRandomString(32)
+	head := model.ResHead{Success: true}
+	body := model.UserRegisterResBody{AppToken: userToken}
+	userRegisterRes := model.UserRegisterRes{Head: head, Body: body}
 
-	fmt.Println("validationCode: ",  validationCode );
+	fmt.Println("validationCode: ", validationCode)
 
 	// crea utente nel database se necessario
 	if user, err := db.UserFindByEmail(userRegisterReq.Email); err != nil {
-		user := model.User{Username:userRegisterReq.Username,Email: userRegisterReq.Email}
-		db.SalvaUser( &user )
+		user := model.User{Username: userRegisterReq.Username, Email: userRegisterReq.Email}
+		db.SalvaUser(&user)
 		// crea record in USER_APP_TOKEN
 		db.SalvaAppToken(user.ID, userToken, validationCode)
 	} else {
@@ -84,12 +84,13 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 	handler := func(val interface{}) {
 		val.(sender).send()
 	}
-	q := queue.NewQueue(handler ,20)
+	q := queue.NewQueue(handler, 20)
 
-	q.Push( EmailInfo{To: userRegisterReq.Email, Code: validationCode})
+	q.Push(EmailInfo{To: userRegisterReq.Email, Code: validationCode})
 	// spedisci via email il codice di validazione
 
 	q.Wait()
+
 	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	res.WriteHeader(http.StatusOK)
 	err2 := json.NewEncoder(res).Encode(userRegisterRes)
@@ -97,7 +98,6 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusInternalServerError)
 	}
 }
-
 
 func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 	var userCodeValidationReq model.UserCodeValidationReq
@@ -111,8 +111,7 @@ func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-
-	result := db.ValidateUserAppToken( userCodeValidationReq.ValidationCode, userCodeValidationReq.AppToken)
+	result := db.ValidateUserAppToken(userCodeValidationReq.ValidationCode, userCodeValidationReq.AppToken)
 	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	res.WriteHeader(http.StatusOK)
 	err2 := json.NewEncoder(res).Encode(model.ResHead{Success: result})
@@ -155,4 +154,3 @@ func createToken(username string, host string) *jwt.Token {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	return token
 }
-

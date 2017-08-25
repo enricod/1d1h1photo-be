@@ -1,25 +1,23 @@
 package db
 
 import (
-	"github.com/enricod/1h1dphoto.com-be/model"
 	"errors"
+	"github.com/enricod/1h1dphoto.com-be/model"
 )
 
-
-func UserFindByEmail(  email string)  (model.User, error) {
-	db := openDB();
+func UserFindByEmail(email string) (model.User, error) {
+	db := openDB()
 	var user model.User
 	db.First(&user, "email=?", email) // find product with code l1212
-	if (user.ID > 0) {
+	if user.ID > 0 {
 		return user, nil
 	} else {
 		return user, errors.New("nessun utente con email ")
 	}
 }
 
-
-func ValidateUserAppToken( validationCode string, appToken string) bool  {
-	db := openDB();
+func ValidateUserAppToken(validationCode string, appToken string) bool {
+	db := openDB()
 	var userAppToken model.UserAppToken
 	db.First(&userAppToken, "validation_code = ? AND app_token=?", validationCode, appToken)
 	if userAppToken.ID > 0 {
@@ -32,8 +30,8 @@ func ValidateUserAppToken( validationCode string, appToken string) bool  {
 
 }
 
-func FindAppToken(appToken string)  *model.UserAppToken  {
-	db := openDB();
+func FindAppToken(appToken string) *model.UserAppToken {
+	db := openDB()
 	var userAppToken model.UserAppToken
 	db.First(&userAppToken, " app_token=?", appToken)
 	if userAppToken.ID > 0 {

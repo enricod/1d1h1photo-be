@@ -1,9 +1,10 @@
 package routes
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
+
 	"github.com/enricod/1h1dphoto.com-be/rest"
+	"github.com/gorilla/mux"
 )
 
 type Route struct {
@@ -29,19 +30,17 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-
-
 var routes = Routes{
 	Route{
 		"userRegister",
 		"POST",
-		"/api/user/register",
+		"/api/users/register",
 		rest.UserRegister,
 	},
 	Route{
 		"userCodeValidation",
 		"POST",
-		"/api/user/codeValidation",
+		"/api/users/codeValidation",
 		rest.UserCodeValidation,
 	},
 	Route{
@@ -53,26 +52,25 @@ var routes = Routes{
 	Route{
 		"event",
 		"GET",
-		"/api/event/{eventId}",
-		rest.IsAuthenticated( rest.Event ),
+		"/api/events/{eventId}",
+		rest.IsAuthenticated(rest.Event),
 	},
 	Route{
 		"logout",
 		"GET",
-		"/api/logout/{token}",
+		"/api/users/logout/{token}",
 		rest.Logout,
 	},
 	Route{
 		"imgUpload",
 		"POST",
-		"/api/img/upload",
+		"/api/images/upload",
 		rest.IsAuthenticated(rest.ImgUpload),
 	},
 	Route{
 		"imgDownload",
 		"GET",
-		"/api/img/download/{id}",
+		"/api/images/download/{id}",
 		rest.ImgDownload,
 	},
 }
-

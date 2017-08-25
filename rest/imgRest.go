@@ -1,32 +1,41 @@
 package rest
 
 import (
-	"net/http"
-	"github.com/gorilla/mux"
-	"strconv"
+	"encoding/json"
+	"fmt"
+	"image"
+	"io"
 	"io/ioutil"
 	"log"
-	"fmt"
-	"github.com/enricod/1h1dphoto.com-be/model"
+	"net/http"
 	"os"
-	"io"
+	"strconv"
+	"strings"
+
 	"github.com/enricod/1h1dphoto.com-be/db"
-	"encoding/json"
+	"github.com/enricod/1h1dphoto.com-be/model"
+	"github.com/gorilla/mux"
+	"github.com/nfnt/resize"
+	"github.com/oliamb/cutter"
+	"github.com/otium/queue"
 )
 
+/**
+ * ImgDownload client riceve jpg dell'immagine richiesta
+ */
 func ImgDownload(resp http.ResponseWriter, req *http.Request) {
 	//fmt.Println(req.URL.RequestURI())
 	vars := mux.Vars(req)
-	imageid,_ := strconv.Atoi( vars["id"])
-	submission, _ := db.SubmissionById( uint(imageid) )
+	imageid, _ := strconv.Atoi(vars["id"])
+	submission, _ := db.SubmissionById(uint(imageid))
 
 	size := req.FormValue("size")
 
 	var filename string
 	if "t" == size {
-		filename = ImagesDir + "/" + submission.ImageUid + "_t"
+		filename = Confs.ImgDir + "/" + submission.ImageUid + "_t"
 	} else {
-		filename = ImagesDir + "/" + submission.ImageUid + "_s"
+		filename = Confs.ImgDir + "/" + submission.ImageUid + "_s"
 	}
 	f, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -38,7 +47,53 @@ func ImgDownload(resp http.ResponseWriter, req *http.Request) {
 	//fmt.Printf("Req: %s %s %s\n", req.URL.Scheme, req.Host, req.URL.Path)
 }
 
+type imgProcess interface {
+	process()
+}
 
+type imgInfo struct {
+	ImagePath string
+	OutDir    string
+	ImageDim  uint
+	ThumbDim  uint
+}
+
+func renamer(postfix string) model.RenamerType {
+	return func(filename string) string {
+		if strings.HasPrefix(filename, ".jpg") {
+			return strings.Replace(filename, ".jpg", postfix+".jpg", 1)
+		}
+		return filename + postfix
+	}
+}
+
+func toSquare() model.ImgTransform {
+	return func(img image.Image, dim uint) (image.Image, error) {
+		croppedImg, err := cutter.Crop(img, cutter.Config{
+			Width:   4,
+			Height:  4,
+			Mode:    cutter.Centered,
+			Options: cutter.Ratio,
+		})
+		m := resize.Resize(dim, 0, croppedImg, resize.Lanczos3)
+		return m, err
+	}
+}
+
+func toNewSize() model.ImgTransform {
+	return func(img image.Image, dim uint) (image.Image, error) {
+		m := resize.Resize(dim, 0, img, resize.Lanczos3)
+		return m, nil
+	}
+}
+
+func (ei imgInfo) process() {
+
+	model.ImageManipulate(ei.ImagePath, ei.OutDir, ei.ImageDim, renamer("_s"), toNewSize())
+	model.ImageManipulate(ei.ImagePath, ei.OutDir, ei.ImageDim, renamer("_t"), toSquare())
+}
+
+// ImgUpload caricamento di un'immagine dal telefono
 func ImgUpload(res http.ResponseWriter, req *http.Request) {
 
 	appToken := req.Header.Get("Authorization")
@@ -58,12 +113,13 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	defer file.Close()
-	imageUid, _ := model.GenerateRandomString(32)
+	imageUID, _ := model.GenerateRandomString(32)
 
-	out, err := os.Create(   "/tmp/" + imageUid)
-	os.Rename("/tmp/" + imageUid, ImagesUploadDir +"/"+ imageUid)
+	tempfile := Confs.ImgUploadDir + "/" + imageUID
+	out, err := os.Create(tempfile)
+	log.Println("tempfile ", tempfile)
 
-	db.InsertSubmission(eventId, userAppToken, imageUid, header.Filename)
+	db.InsertSubmission(eventId, userAppToken, imageUID, header.Filename)
 	if err != nil {
 		log.Println("[-] Unable to create the file for writing. Check your write access privilege.", err)
 		fmt.Fprintf(res, "[-] Unable to create the file for writing. Check your write access privilege.", err)
@@ -81,10 +137,19 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 
 	log.Println("[+] File uploaded successfully: uploaded-", header.Filename)
 
+	//      RESIZE IMMAGINE
+	handler := func(val interface{}) {
+		val.(imgProcess).process()
+	}
+	q := queue.NewQueue(handler, 20)
+	q.Push(imgInfo{ImagePath: tempfile, OutDir: Confs.ImgDir, ImageDim: 1024, ThumbDim: 250})
+	q.Wait()
+
+	// SCRIVI RESPONSE
 	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	res.WriteHeader(http.StatusOK)
 
-	respHead := model.ResHead{Success:true}
+	respHead := model.ResHead{Success: true}
 	err2 := json.NewEncoder(res).Encode(respHead)
 	if err2 != nil {
 		res.WriteHeader(http.StatusInternalServerError)

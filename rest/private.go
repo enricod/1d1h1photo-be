@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/enricod/1h1dphoto.com-be/model"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/enricod/1h1dphoto.com-be/model"
 	"github.com/gorilla/mux"
 )
 
