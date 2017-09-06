@@ -4,23 +4,20 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 )
 
-var MyKey = "1d1hphoto"
+// Confs configurazioni generali applicazione
+var Confs AppConfs
 
-type Claims struct {
-	Username string
-	Time     int64
-	jwt.StandardClaims
-}
-
-// AppConfs configurazioni dell'app
+// AppConfs configurazioni dell'app, lette da file di configurazione esterno
 type AppConfs struct {
 	Port         int
 	ImgDir       string
 	ImgUploadDir string
+	DbUser       string
+	DbPass       string
+	DbDatabase   string
 }
 
 // Response probabilmente obsoleto
@@ -36,15 +33,18 @@ type UserRegisterReq struct {
 	Email    string
 }
 
+// UserCodeValidationReq req per validazione codice utente
 type UserCodeValidationReq struct {
 	ValidationCode string
 	AppToken       string
 }
 
+// ResHead sezione head delle risposte JSON
 type ResHead struct {
 	Success bool `json:"success"`
 }
 
+// UserRegisterResBody body per req di registrazione utente
 type UserRegisterResBody struct {
 	AppToken string `json:"appToken"`
 	User     User
@@ -62,6 +62,11 @@ type Event struct {
 	End         time.Time
 	Name        string
 	Submissions []EventSubmission
+}
+
+// IsClosed true se evento è terminato
+func (e Event) IsClosed() bool {
+	return e.End.Before(time.Now())
 }
 
 // EventSubmission oggetto dal DB per descrizione immagine associata a evento
@@ -82,6 +87,15 @@ type EventSubmission struct {
 	SubmissionDate time.Time
 }
 
+// Msg per traduzioni
+type Msg struct {
+	gorm.Model
+	Code   string
+	Locale string
+	Value  string
+	Desc   string
+}
+
 // User utente da database
 type User struct {
 	gorm.Model
@@ -90,6 +104,7 @@ type User struct {
 	EmailValid bool
 }
 
+// UserAppToken contiene tokens associati ad utente
 type UserAppToken struct {
 	gorm.Model
 	User           User `gorm:"ForeignKey:UserId"`
@@ -99,12 +114,8 @@ type UserAppToken struct {
 	Valid          bool
 }
 
-func (e Event) IsClosed() bool {
-	return e.End.Before(time.Now())
-}
-
 type EventsSummaryResBody struct {
-	NextEvent    Event   `json:"nextEvent"`
+	FutureEvents []Event `json:"futureEvents"`
 	ClosedEvents []Event `json:"closedEvents"`
 }
 
@@ -128,6 +139,7 @@ type EventSubmissionAction struct {
 	Type              string
 }
 
+// GenerateRandomBytes generazione bytes casuali
 func GenerateRandomBytes(n int) ([]byte, error) {
 	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, n)
@@ -136,7 +148,6 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return b, nil
 }
 

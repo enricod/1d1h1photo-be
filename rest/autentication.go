@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/enricod/1h1dphoto.com-be/db"
 	"github.com/enricod/1h1dphoto.com-be/model"
 	"github.com/gorilla/mux"
@@ -42,11 +40,9 @@ func (ei EmailInfo) send() {
 	}
 }
 
-/**
- * UserRegister riceve in post il tipo UserRegisterReq. Se utente non esiste già sul database, lo creo.
- * genero codice alfanumerico che poi sarà spedito via email.
- * Restituisce un tipo UserRegisterRes
- */
+// UserRegister riceve in post il tipo UserRegisterReq. Se utente non esiste già sul database, lo creo.
+// genero codice alfanumerico che poi sarà spedito via email.
+// Restituisce un tipo UserRegisterRes
 func UserRegister(res http.ResponseWriter, req *http.Request) {
 
 	var userRegisterReq model.UserRegisterReq
@@ -139,18 +135,4 @@ func Sessions(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 	}
-}
-
-func createToken(username string, host string) *jwt.Token {
-	expireToken := time.Now().Add(time.Hour * 1).Unix()
-	claim := model.Claims{
-		username,
-		time.Now().Round(time.Millisecond).UnixNano(),
-		jwt.StandardClaims{
-			ExpiresAt: expireToken,
-			Issuer:    host,
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	return token
 }

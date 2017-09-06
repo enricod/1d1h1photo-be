@@ -10,14 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//
-// Confs configurazioni applicazione
-//
-var Confs model.AppConfs
-
-//
 // IsAuthenticated utilizzata per controllare se token applicazione è valido
-//
 func IsAuthenticated(f func(w http.ResponseWriter, req *http.Request)) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 
@@ -32,10 +25,11 @@ func IsAuthenticated(f func(w http.ResponseWriter, req *http.Request)) func(w ht
 	}
 }
 
+// Event dettaglio un evento con immagini collegate
 func Event(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	eventId, _ := strconv.Atoi(vars["eventId"])
-	event, _ := db.EventDetails(uint(eventId))
+	eventID, _ := strconv.Atoi(vars["eventID"])
+	event, _ := db.EventDetails(uint(eventID))
 
 	response := model.EventResBody{Body: event}
 
@@ -48,22 +42,22 @@ func Event(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// EventsSummary elenco eventi con 3 immagini per ogni evento
 func EventsSummary(res http.ResponseWriter, req *http.Request) {
-
-	events := db.EventsList(4)
-
+	var nrImmaginiPerEvento = 3
+	events := db.EventsList(nrImmaginiPerEvento)
 	// separiamo eventi in 2 blocchi: quello futuro, e l'elenco di quelli passati
 	var closed = make([]model.Event, 0)
-	var next model.Event
+	var future = make([]model.Event, 0)
 	for _, e := range events {
 		if e.IsClosed() {
 			closed = append(closed, e)
 		} else {
-			next = e
+			future = append(future, e)
 		}
 	}
 
-	body := model.EventsSummaryResBody{ClosedEvents: closed, NextEvent: next}
+	body := model.EventsSummaryResBody{ClosedEvents: closed, FutureEvents: future}
 	eventsListRes := model.EventsListRes{Body: body}
 
 	res.Header().Set("Content-Type", "application/json; charset=UTF-8")

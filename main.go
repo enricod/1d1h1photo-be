@@ -10,7 +10,6 @@ import (
 
 	"github.com/enricod/1h1dphoto.com-be/model"
 
-	"github.com/enricod/1h1dphoto.com-be/rest"
 	"github.com/enricod/1h1dphoto.com-be/routes"
 )
 
@@ -19,13 +18,13 @@ func defaultConfs() model.AppConfs {
 }
 
 func main() {
-
 	conffile := flag.String("c", "/etc/1h1d.json", "file configurazione")
 	flag.Parse()
 
 	// oggetto con configurazioni
 	var confs model.AppConfs
 
+	log.Printf("lettura configurazioni da file ", *conffile)
 	content, err := ioutil.ReadFile(*conffile)
 	if err != nil {
 		confs = defaultConfs()
@@ -37,15 +36,9 @@ func main() {
 			confs = defaultConfs()
 		}
 	}
-	// port := flag.String("port", "9090", "porta servizio")
-	// imagesDir := flag.String("imgDir", "/tmp/images", "directory per immagini finali")
-	// imagesUploadDir := flag.String("imgUploadDir", "/tmp/imagesTemp", "directory per immagini caricate da utente")
 
-	rest.Confs = confs
-	//rest.ImagesUploadDir = *imagesUploadDir
+	model.Confs = confs
 
 	log.Printf("Avvio server su porta %v\n", confs.Port)
-	// log.Printf("Images dir %v\n", rest.ImagesDir)
-	// log.Printf("Images upload dir %v\n", rest.ImagesUploadDir)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(confs.Port), routes.NewRouter()))
 }

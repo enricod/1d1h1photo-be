@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Route definizione di una route
 type Route struct {
 	Name        string
 	Method      string
@@ -14,6 +15,7 @@ type Route struct {
 	HandlerFunc http.HandlerFunc
 }
 
+// Routes elenco delle routes
 type Routes []Route
 
 func NewRouter() *mux.Router {
@@ -52,7 +54,7 @@ var routes = Routes{
 	Route{
 		"event",
 		"GET",
-		"/api/events/{eventId}",
+		"/api/events/{eventID}",
 		rest.IsAuthenticated(rest.Event),
 	},
 	Route{

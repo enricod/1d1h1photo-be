@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/enricod/1h1dphoto.com-be/db"
 	"github.com/enricod/1h1dphoto.com-be/model"
@@ -20,25 +21,24 @@ import (
 	"github.com/otium/queue"
 )
 
-/**
- * ImgDownload client riceve jpg dell'immagine richiesta
- */
+// ImgDownload client riceve jpg dell'immagine richiesta
 func ImgDownload(resp http.ResponseWriter, req *http.Request) {
-	//fmt.Println(req.URL.RequestURI())
 	vars := mux.Vars(req)
 	imageid, _ := strconv.Atoi(vars["id"])
-	submission, _ := db.SubmissionById(uint(imageid))
+	submission, _ := db.SubmissionByID(uint(imageid))
 
 	size := req.FormValue("size")
 
 	var filename string
 	if "t" == size {
-		filename = Confs.ImgDir + "/" + submission.ImageUid + "_t"
+		filename = model.Confs.ImgDir + "/" + submission.ImageUid + "_t"
 	} else {
-		filename = Confs.ImgDir + "/" + submission.ImageUid + "_s"
+		filename = model.Confs.ImgDir + "/" + submission.ImageUid + "_s"
 	}
+
 	f, err := ioutil.ReadFile(filename)
 	if err != nil {
+		// mandiamo immagine standard?
 		panic(err)
 	}
 
@@ -88,9 +88,9 @@ func toNewSize() model.ImgTransform {
 }
 
 func (ei imgInfo) process() {
-
 	model.ImageManipulate(ei.ImagePath, ei.OutDir, ei.ImageDim, renamer("_s"), toNewSize())
 	model.ImageManipulate(ei.ImagePath, ei.OutDir, ei.ImageDim, renamer("_t"), toSquare())
+	log.Println("generazione thumbnails terminata  ", ei.ImagePath, ei.OutDir)
 }
 
 // ImgUpload caricamento di un'immagine dal telefono
@@ -98,9 +98,15 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 
 	appToken := req.Header.Get("Authorization")
 
-	// FIXME cercare un evento in corso, se esiste
+	// cercare un evento in corso, se esiste.
+	eventoAperto := db.FindEventoByDate(time.Now())
+	if eventoAperto != nil {
+		// non esiste evento aperto, diamo errore al chiamante
+		log.Println("nessun evento aperto, non posso accettare immagini")
+		res.WriteHeader(http.StatusNotAcceptable)
+		return
+	}
 
-	eventID := uint(1)
 	userAppToken := db.FindAppToken(appToken)
 	file, header, err := req.FormFile("image")
 
@@ -113,11 +119,11 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 	defer file.Close()
 	imageUID, _ := model.GenerateRandomString(32)
 
-	tempfile := Confs.ImgUploadDir + "/" + imageUID
+	tempfile := model.Confs.ImgUploadDir + "/" + imageUID
 	out, err := os.Create(tempfile)
 	log.Println("tempfile ", tempfile)
 
-	db.InsertSubmission(eventID, userAppToken, imageUID, header.Filename)
+	db.InsertSubmission(eventoAperto.ID, userAppToken, imageUID, header.Filename)
 	if err != nil {
 		log.Println("[-] Unable to create the file for writing. Check your write access privilege.", err)
 		fmt.Fprintf(res, "[-] Unable to create the file for writing. Check your write access privilege.", err)
@@ -140,7 +146,7 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 		val.(imgProcess).process()
 	}
 	q := queue.NewQueue(handler, 20)
-	q.Push(imgInfo{ImagePath: tempfile, OutDir: Confs.ImgDir, ImageDim: 1024, ThumbDim: 250})
+	q.Push(imgInfo{ImagePath: tempfile, OutDir: model.Confs.ImgDir, ImageDim: 1024, ThumbDim: 250})
 	q.Wait()
 
 	// SCRIVI RESPONSE

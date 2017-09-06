@@ -11,5 +11,4 @@ func TestRandomStringBytes(t *testing.T) {
 	if len(result) != l {
 		t.Errorf("lunghezza non corretta, got %s, want %s ", len(result), 1)
 	}
-
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/enricod/1h1dphoto.com-be/model"
 )
 
+// FindEventSubmissions elenco delle immagini associate a un evento
 func FindEventSubmissions(event *model.Event, limit int) []model.EventSubmission {
 	db := openDB()
 	var eventSubmissions []model.EventSubmission
@@ -15,13 +16,13 @@ func FindEventSubmissions(event *model.Event, limit int) []model.EventSubmission
 	return eventSubmissions
 }
 
-func EventsList(limit uint) []model.Event {
+// EventsList elenco degli eventi.
+func EventsList(limit int) []model.Event {
 	db := openDB()
 	var events []model.Event
 	db.Order("start DESC").Find(&events)
-	for k, _ := range events {
-		submissions := FindEventSubmissions(&events[k], 3)
-		//fmt.Println("trovati submissions: ", len(submissions))
+	for k := range events {
+		submissions := FindEventSubmissions(&events[k], limit)
 		for _, s := range submissions {
 			s.ThumbUrl = "/api/images/download/" + fmt.Sprint(s.ID) + "?size=t"
 			s.ImageUrl = "/api/images/download/" + fmt.Sprint(s.ID) + "?size=s"
@@ -31,21 +32,33 @@ func EventsList(limit uint) []model.Event {
 	return events
 }
 
-func SubmissionById(id uint) (model.EventSubmission, error) {
+// FindEventoByDate cerca app token
+func FindEventoByDate(data time.Time) *model.Event {
+	db := openDB()
+	var result model.Event
+	db.First(&result, " start >= ? AND end < ? ", data, data)
+	if result.ID > 0 {
+		return &result
+	}
+	return nil
+}
+
+// SubmissionByID ritorna una foto dato l'ID
+func SubmissionByID(id uint) (model.EventSubmission, error) {
 	db := openDB()
 	var submission model.EventSubmission
 	db.First(&submission, id) // find product with code l1212
 	if submission.ID > 0 {
 		return submission, nil
-	} else {
-		return submission, errors.New("nessun utente con email ")
 	}
+	return submission, errors.New("nessun utente con email ")
 }
 
-func EventDetails(eventId uint) (model.Event, error) {
+// EventDetails dettaglio evento (carica 10000 immagini)
+func EventDetails(eventID uint) (model.Event, error) {
 	db := openDB()
 	var event model.Event
-	db.First(&event, eventId)
+	db.First(&event, eventID)
 	if event.ID > 0 {
 		submissions := FindEventSubmissions(&event, 10000)
 		//fmt.Println("trovati %v submissions", len(submissions))
@@ -55,19 +68,19 @@ func EventDetails(eventId uint) (model.Event, error) {
 			event.Submissions = append(event.Submissions, s)
 		}
 		return event, nil
-	} else {
-		return event, errors.New("nessun utente con email ")
 	}
+	return event, errors.New("nessun utente con email ")
 }
 
-func InsertSubmission(eventId uint, token *model.UserAppToken, imageUid string, imageName string) bool {
+// InsertSubmission salva nel DB un'immagine
+func InsertSubmission(eventID uint, token *model.UserAppToken, imageUID string, imageName string) bool {
 	db := openDB()
 
 	eventSubmission := model.EventSubmission{
-		EventId:        eventId,
+		EventId:        eventID,
 		UserId:         token.UserId,
 		ImageName:      imageName,
-		ImageUid:       imageUid,
+		ImageUid:       imageUID,
 		SubmissionDate: time.Now()}
 
 	db.Create(&eventSubmission)
