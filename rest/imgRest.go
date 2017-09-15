@@ -100,7 +100,7 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 
 	// cercare un evento in corso, se esiste.
 	eventoAperto := db.FindEventoByDate(time.Now())
-	if eventoAperto != nil {
+	if eventoAperto == nil {
 		// non esiste evento aperto, diamo errore al chiamante
 		log.Println("nessun evento aperto, non posso accettare immagini")
 		res.WriteHeader(http.StatusNotAcceptable)

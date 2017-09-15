@@ -24,8 +24,8 @@ func EventsList(limit int) []model.Event {
 	for k := range events {
 		submissions := FindEventSubmissions(&events[k], limit)
 		for _, s := range submissions {
-			s.ThumbUrl = "/api/images/download/" + fmt.Sprint(s.ID) + "?size=t"
-			s.ImageUrl = "/api/images/download/" + fmt.Sprint(s.ID) + "?size=s"
+			s.ThumbUrl = "/images/download/" + fmt.Sprint(s.ID) + "?size=t"
+			s.ImageUrl = "/images/download/" + fmt.Sprint(s.ID) + "?size=s"
 			events[k].Submissions = append(events[k].Submissions, s)
 		}
 	}
@@ -36,7 +36,7 @@ func EventsList(limit int) []model.Event {
 func FindEventoByDate(data time.Time) *model.Event {
 	db := openDB()
 	var result model.Event
-	db.First(&result, " start >= ? AND end < ? ", data, data)
+	db.First(&result, " start <= ? AND end > ? ", data, data)
 	if result.ID > 0 {
 		return &result
 	}
@@ -63,8 +63,8 @@ func EventDetails(eventID uint) (model.Event, error) {
 		submissions := FindEventSubmissions(&event, 10000)
 		//fmt.Println("trovati %v submissions", len(submissions))
 		for _, s := range submissions {
-			s.ThumbUrl = "/api/images/download/" + fmt.Sprint(s.ID) + "?size=t"
-			s.ImageUrl = "/api/images/download/" + fmt.Sprint(s.ID) + "?size=s"
+			s.ThumbUrl = "/images/download/" + fmt.Sprint(s.ID) + "?size=t"
+			s.ImageUrl = "/images/download/" + fmt.Sprint(s.ID) + "?size=s"
 			event.Submissions = append(event.Submissions, s)
 		}
 		return event, nil

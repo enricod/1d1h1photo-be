@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"github.com/enricod/1h1dphoto.com-be/model"
 	"github.com/enricod/1h1dphoto.com-be/rest"
 	"github.com/gorilla/mux"
 )
@@ -36,43 +37,43 @@ var routes = Routes{
 	Route{
 		"userRegister",
 		"POST",
-		"/api/users/register",
+		model.API_PREFIX + "/users/register",
 		rest.UserRegister,
 	},
 	Route{
 		"userCodeValidation",
 		"POST",
-		"/api/users/codeValidation",
+		model.API_PREFIX + "/users/codeValidation",
 		rest.UserCodeValidation,
 	},
 	Route{
 		"eventsSummaryList",
 		"GET",
-		"/api/events/summary/list",
+		model.API_PREFIX + "/events/summary/list",
 		rest.IsAuthenticated(rest.EventsSummary),
 	},
 	Route{
 		"event",
 		"GET",
-		"/api/events/{eventID}",
+		model.API_PREFIX + "/events/{eventID}",
 		rest.IsAuthenticated(rest.Event),
 	},
 	Route{
 		"logout",
 		"GET",
-		"/api/users/logout/{token}",
+		model.API_PREFIX + "/users/logout/{token}",
 		rest.Logout,
 	},
 	Route{
 		"imgUpload",
 		"POST",
-		"/api/images/upload",
+		model.API_PREFIX + "/images/upload",
 		rest.IsAuthenticated(rest.ImgUpload),
 	},
 	Route{
 		"imgDownload",
 		"GET",
-		"/api/images/download/{id}",
+		model.API_PREFIX + "/images/download/{id}",
 		rest.ImgDownload,
 	},
 }

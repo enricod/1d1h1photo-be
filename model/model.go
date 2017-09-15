@@ -7,6 +7,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const API_PREFIX = "/1h1dphoto/api"
+
 // Confs configurazioni generali applicazione
 var Confs AppConfs
 

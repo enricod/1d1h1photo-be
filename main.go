@@ -24,7 +24,7 @@ func main() {
 	// oggetto con configurazioni
 	var confs model.AppConfs
 
-	log.Printf("lettura configurazioni da file ", *conffile)
+	log.Printf("lettura configurazioni da file %v\n", *conffile)
 	content, err := ioutil.ReadFile(*conffile)
 	if err != nil {
 		confs = defaultConfs()
