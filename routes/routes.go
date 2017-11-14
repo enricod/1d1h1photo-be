@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"github.com/enricod/1h1dphoto.com-be/html"
 	"github.com/enricod/1h1dphoto.com-be/model"
 	"github.com/enricod/1h1dphoto.com-be/rest"
 	"github.com/gorilla/mux"
@@ -75,5 +76,11 @@ var routes = Routes{
 		"GET",
 		model.API_PREFIX + "/images/download/{id}",
 		rest.ImgDownload,
+	},
+	Route{
+		"home",
+		"GET",
+		"/",
+		html.Home,
 	},
 }
