@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-
 	"github.com/enricod/1h1dphoto.com-be/model"
 )
 

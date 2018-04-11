@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/enricod/1h1dphoto.com-be/model"
-
 	"github.com/enricod/1h1dphoto.com-be/routes"
 )
 
