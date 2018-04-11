@@ -13,12 +13,14 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
+// Tokens è una mappa contenente token => utente
 var Tokens = make(map[string]model.User)
 
 type sender interface {
 	send()
 }
 
+// EmailInfo struttura per informazione su utente
 type EmailInfo struct {
 	To   string
 	Code string
@@ -35,14 +37,14 @@ func (ei EmailInfo) send() {
 
 	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
-		fmt.Println("Errore in invie email %v", err)
+		fmt.Println("Errore in invio email %v", err)
 		// panic(err)
 	}
 }
 
 // UserRegister riceve in post il tipo UserRegisterReq. Se utente non esiste già sul database, lo creo.
 // genero codice alfanumerico che poi sarà spedito via email.
-// Restituisce un tipo UserRegisterRes
+// Restituisce (in JSON) un istanza di UserRegisterRes
 func UserRegister(res http.ResponseWriter, req *http.Request) {
 
 	var userRegisterReq model.UserRegisterReq
