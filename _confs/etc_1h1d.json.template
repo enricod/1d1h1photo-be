@@ -1,0 +1,9 @@
+{
+  "ImgDir":"/home/enrico/var/images",
+  "ImgUploadDir":"/tmp/imagesTemp",
+  "Port":9090,
+  "DbUser":"root",
+  "DbPass":"root",
+  "DbDatabase":"onehouronedayphoto"
+
+}

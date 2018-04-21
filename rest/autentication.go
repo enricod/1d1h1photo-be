@@ -95,6 +95,7 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// UserCodeValidation validazione del codice inviato all'utente
 func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 	var userCodeValidationReq model.UserCodeValidationReq
 	if req.Body == nil {
@@ -114,10 +115,12 @@ func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 	if err2 != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 	}
+	// TODO
 	// aggiorna USER_APP_TOKEN con informazione che utente ha validato email
 	// CHECK_VALID => true
 }
 
+// Logout cancellazione info utente ... da definire
 func Logout(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	sToken := vars["token"]
