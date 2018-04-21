@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// IsAuthenticated utilizzata per controllare se token applicazione è valido
+// IsAuthenticated utilizzata per controllare se token applicazione è valido. Mi aspetto un header Authorization contentente appToken.
 func IsAuthenticated(f func(w http.ResponseWriter, req *http.Request)) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 
