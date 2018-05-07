@@ -119,6 +119,12 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 	defer file.Close()
 	imageUID, _ := model.GenerateRandomString(32)
 
+	errCreazioneDir := os.MkdirAll(model.Confs.ImgUploadDir, 0777)
+	if errCreazioneDir != nil {
+		log.Println("[-] Unable to create the directory for writing. Check your write access privilege.", errCreazioneDir)
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	tempfile := model.Confs.ImgUploadDir + "/" + imageUID
 	out, err := os.Create(tempfile)
 	log.Println("tempfile ", tempfile)
@@ -126,8 +132,9 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 	db.InsertSubmission(eventoAperto.ID, userAppToken, imageUID, header.Filename)
 	if err != nil {
 		log.Println("[-] Unable to create the file for writing. Check your write access privilege.", err)
-		fmt.Fprintf(res, "[-] Unable to create the file for writing. Check your write access privilege.", err)
+		// fmt.Fprintf(res, "[-] Unable to create the file for writing. Check your write access privilege.", err)
 		res.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	defer out.Close()
 
