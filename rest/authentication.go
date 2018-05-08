@@ -13,6 +13,10 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
+func version() string {
+	return "0.2"
+}
+
 // Tokens è una mappa contenente token => utente
 var Tokens = make(map[string]model.User)
 
@@ -108,6 +112,7 @@ func UserRegister(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// UserCodeValidation validazione codice utente
 func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 	var userCodeValidationReq model.UserCodeValidationReq
 	if req.Body == nil {
@@ -131,6 +136,7 @@ func UserCodeValidation(res http.ResponseWriter, req *http.Request) {
 	// CHECK_VALID => true
 }
 
+// Logout logout utente
 func Logout(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	sToken := vars["token"]
@@ -138,6 +144,7 @@ func Logout(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 }
 
+// Sessions elenco sessioni
 func Sessions(res http.ResponseWriter, req *http.Request) {
 	s := reflect.ValueOf(Tokens).MapKeys()
 	var str string
