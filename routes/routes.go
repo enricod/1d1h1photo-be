@@ -36,6 +36,12 @@ func NewRouter() *mux.Router {
 
 var routes = Routes{
 	Route{
+		"status",
+		"GET",
+		model.API_PREFIX + "/status",
+		rest.Status,
+	},
+	Route{
 		"userRegister",
 		"POST",
 		model.API_PREFIX + "/users/register",

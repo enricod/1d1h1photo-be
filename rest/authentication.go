@@ -42,6 +42,17 @@ func (ei EmailInfo) send() {
 	}
 }
 
+// Status chiamata per avere info sul backend
+func Status(res http.ResponseWriter, req *http.Request) {
+	err := json.NewEncoder(res).Encode(model.Response{Data: "Ok"})
+	if err != nil {
+		http.Error(res, err.Error(), 400)
+		return
+	} else {
+		res.WriteHeader(http.StatusOK)
+	}
+}
+
 // UserRegister riceve in post il tipo UserRegisterReq. Se utente non esiste già sul database, lo creo.
 // genero codice alfanumerico che poi sarà spedito via email.
 // Restituisce (in JSON) un istanza di UserRegisterRes
