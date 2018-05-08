@@ -1,0 +1,4 @@
+
+
+[qualita-aria.enricod.it]
+qualita-aria.enricod.it ansible_connection=ssh ansible_user=root

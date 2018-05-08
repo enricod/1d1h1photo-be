@@ -1,0 +1,10 @@
+- name: deploy backend
+  hosts: qualita-aria.enricod.it
+  tasks:
+  - name: stop service
+    service: name=1h1dphoto.com-be state=stopped
+  - name: copy application
+    synchronize: src="../1h1dphoto.com-be" dest=/home/enrico/bin/1h1dphoto.com-be
+  - name: start service
+    service: name=1h1dphoto.com-be state=started
+    

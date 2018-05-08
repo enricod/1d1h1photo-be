@@ -58,6 +58,7 @@ type imgInfo struct {
 	ThumbDim  uint
 }
 
+// renamer ritorna una funzione che esegue il rename del file
 func renamer(postfix string) model.RenamerType {
 	return func(filename string) string {
 		if strings.HasPrefix(filename, ".jpg") {
@@ -67,6 +68,7 @@ func renamer(postfix string) model.RenamerType {
 	}
 }
 
+// toSquare ritorna una funzione che crea thumbnail quadrata
 func toSquare() model.ImgTransform {
 	return func(img image.Image, dim uint) (image.Image, error) {
 		croppedImg, err := cutter.Crop(img, cutter.Config{
@@ -101,9 +103,10 @@ func ImgUpload(res http.ResponseWriter, req *http.Request) {
 	// cercare un evento in corso, se esiste.
 	eventoAperto := db.FindEventoByDate(time.Now())
 	if eventoAperto == nil {
-		// non esiste evento aperto, diamo errore al chiamante
+		// non esiste alcun evento aperto, diamo errore al chiamante
 		log.Println("nessun evento aperto, non posso accettare immagini")
 		res.WriteHeader(http.StatusNotAcceptable)
+		fmt.Fprintf(res, "{'no open event': %s}", "can't accept images")
 		return
 	}
 
